@@ -1,0 +1,48 @@
+worker_processes  auto;
+
+events {
+  worker_connections  1024;
+}
+
+http {
+  include /etc/nginx/mime.types;
+
+  gzip on;
+  gzip_comp_level 3;
+  gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+  client_max_body_size 0;
+
+  server {
+    listen 80;
+    server_name db.movieapp.net;
+
+    location / {
+      proxy_pass http://database:80;
+    }
+  }
+
+  server {
+    listen 80;
+    server_name pgadmin.movieapp.net;
+
+    location / {
+      proxy_pass http://pgadmin:80;
+    }
+  }
+
+  server {
+    listen 80;
+    server_name www.movieapp.net;
+
+    location / {
+      proxy_pass http://www:80;
+    }
+  }
+}
+
+stream {
+  server {
+    listen *:5432;
+    proxy_pass database:5432;
+  }
+}

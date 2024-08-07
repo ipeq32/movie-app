@@ -1,0 +1,66 @@
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile.dev
+    container_name: nginx
+    hostname: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+      - "6379:6379"
+    env_file:
+      - .env.dev
+    networks:
+      - movieapp
+    command: /bin/bash -c "envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+    depends_on:
+      - database
+      - pgadmin
+      - www
+  database:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile.dev
+    container_name: database
+    hostname: database
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=movieapp
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - movieapp
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    hostname: pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=dev@movieapp.com
+      - PGADMIN_DEFAULT_PASSWORD=movieapp
+    volumes:
+      - ./pgadmin:/var/lib/pgadmin
+    networks:
+      - movieapp
+  www:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: www
+    hostname: www
+    volumes:
+      - ./:/usr/app/
+      - /usr/app/node_modules
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - .env.dev
+    networks:
+      - movieapp
+networks:
+  movieapp:
+    driver: bridge
+volumes:
+  pg_data:
+    driver: local
