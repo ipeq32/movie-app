@@ -10,7 +10,7 @@ services:
       - "443:443"
       - "6379:6379"
     env_file:
-      - .env.dev
+      - .env
     networks:
       - movieapp
     command: /bin/bash -c "envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
@@ -55,7 +55,7 @@ services:
     environment:
       - NODE_ENV=development
     env_file:
-      - .env.dev
+      - .env
     networks:
       - movieapp
 networks:
